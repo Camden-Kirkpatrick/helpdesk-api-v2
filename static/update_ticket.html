@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Update Ticket</title>
-    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="/static/js/api.js" defer></script>
     <script src="js/patch.js" defer></script>
 </head>
 <body>
     <nav>
         <a href="/static/index.html"> Home </a>
+        <a href="/api/tickets/">View all Tickets</a>
         <a href="/static/add_ticket.html"> Add Ticket </a>
         <a href="/static/update_ticket.html"> Update Ticket </a>
         <a href="/static/delete_ticket.html"> Delete Ticket </a>
@@ -19,17 +21,17 @@
         <form id="form">
             <div class="form-group">
                 <label for="ticket_id">Ticket ID:</label>
-                <input type="number" id="ticket_id" name="ticket_id" required>
+                <input type="number" id="ticket_id" name="ticket_id" min="1" required>
             </div>
             
             <div class="form-group">
                 <label for="title">Title:</label>
-                <input type="text" name="title" id="title">
+                <input type="text" name="title" id="title" minlength="1">
             </div>
 
             <div class="form-group">
                 <label for="description">Description:</label>
-                <textarea name="description" id="description"></textarea>
+                <textarea name="description" id="description" minlength="1"></textarea>
             </div>
 
             <div class="form-group">

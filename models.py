@@ -1,5 +1,6 @@
 from sqlmodel import Field, SQLModel
 from enum import Enum
+from datetime import date
 
 
 class TicketStatus(str, Enum):
@@ -15,9 +16,11 @@ class TicketBase(SQLModel):
 
 class Ticket(TicketBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
+    created: date = Field(default_factory=date.today)
 
 class TicketPublic(TicketBase):
     id: int
+    created: date
 
 class TicketCreate(SQLModel):
     title: str

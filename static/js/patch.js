@@ -1,71 +1,67 @@
+// patch.js
+
 const form = document.getElementById("form");
 
-form.addEventListener("submit", async event => {
-    event.preventDefault(); // prevent form from reloading
+form.addEventListener("submit", async (event) =>
+{
+    event.preventDefault(); // prevent form reload
 
-    const ticket_id = document.getElementById("ticket_id").value;
+    const ticket_id = valid_ticket_id();
+    if (!ticket_id)
+        return;
 
-    console.log(ticket_id);
-    
     const payload = {};
 
     if (form.title.value.trim() !== "")
     {
-        payload.title = form.title.value;
+        payload.title = form.title.value.trim();
     }
 
     if (form.description.value.trim() !== "")
     {
-        payload.description = form.description.value;
+        payload.description = form.description.value.trim();
     }
 
     if (form.priority.value !== "")
     {
-        payload.priority = Number(form.priority.value);
-    } 
+        const priority = Number(form.priority.value);
+
+        if (!Number.isInteger(priority) || priority < 1 || priority > 5)
+        {
+            alert("priority must be an integer between 1 and 5");
+            return;
+        }
+
+        payload.priority = priority;
+    }
 
     if (form.ticket_status.value !== "")
     {
         payload.status = form.ticket_status.value;
     }
 
-    // If the user didn't enter any form data
     if (Object.keys(payload).length === 0)
     {
         alert("Enter at least one field to update");
         return;
     }
 
-    const exists = await fetch(`/api/tickets/${ticket_id}`, {method: "GET"});
-    
-    if (!exists.ok)
+    // ---------- Requests ----------
+    try
     {
-        alert(`Error: Ticket with ticket_id=${ticket_id} not found`);
-        return;
-    }
+        // Update ticket
+        await requestOrThrow(`/api/tickets/${ticket_id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
 
-    fetch(`/api/tickets/${ticket_id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-    })
-    .then(async res => {
-        const data = await res.json();
-
-        if (!res.ok)
-        {
-            const errors = data.detail || [];
-            let messages = "";
-
-            for (const e of errors)
-            {
-                messages += e.msg + "\n";
-            }
-
-            alert(messages || "Request failed");
-            return;
-        }
-        
+        // Success
         window.location.href = "/api/tickets/" + ticket_id;
-    })
+    }
+    catch (err)
+    {
+        console.error(err);
+        alert(err?.message || "Unexpected error");
+    }
 });

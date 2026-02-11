@@ -1,8 +1,9 @@
 # uvicorn main:app --reload
 
-from fastapi import FastAPI, Query, Form, HTTPException
+from fastapi import FastAPI, Query, Form, HTTPException, Path
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from datetime import date
 from sqlmodel import select
 from models import *
 from db import *
@@ -71,6 +72,11 @@ def query_ticket_by_parameters(
         stmt = stmt.where(Ticket.status == status)
 
     tickets = session.exec(stmt.offset(offset).limit(limit)).all()
+
+    if len(tickets) == 0:
+        raise HTTPException(
+            status_code=404, detail=f"The search query returned no results"
+        )
         
     return tickets
 
@@ -78,7 +84,7 @@ def query_ticket_by_parameters(
 
 # Get Ticket by id
 @app.get("/api/tickets/{ticket_id}", response_model=TicketPublic)
-def query_ticket_by_id(ticket_id: int, session: SessionDep) -> Ticket:
+def query_ticket_by_id(session: SessionDep, ticket_id: int = Path(gt=0)) -> Ticket:
     # Search using the ticket's id, which is the primary key in the DB
     ticket = session.get(Ticket, ticket_id)
     if not ticket:
@@ -102,10 +108,14 @@ def add_ticket(
     if not title:
         raise HTTPException(422, "Title cannot be blank")
     
+    description = description.strip()
+    if not description:
+        raise HTTPException(422, "Description cannot be blank")
+    
     ticket = Ticket(
         title=title,
         description=description,
-        priority=priority
+        priority=priority,
     )
 
     session.add(ticket)
@@ -131,9 +141,21 @@ def update_ticket(
         )
     
     if ticket.title is not None:
-        db_ticket.title = ticket.title
+        if ticket.title.strip() != "":
+            db_ticket.title = ticket.title
+        else:
+            raise HTTPException(
+                status_code=422, detail=f"title cannot be empty"
+            )
+        
     if ticket.description is not None:
-        db_ticket.description = ticket.description
+        if ticket.description.strip() != "":
+            db_ticket.description = ticket.description
+        else:
+            raise HTTPException(
+                status_code=422, detail=f"description cannot be empty"
+            )
+
     if ticket.priority is not None:
         db_ticket.priority = ticket.priority
     if ticket.status is not None:
