@@ -1,15 +1,11 @@
 from fastapi import FastAPI, Query, Form, HTTPException, Path
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from datetime import date
-from sqlmodel import select
-from typing import Annotated
-from starlette import status
-import auth
-import tickets
-from models import *
-from auth import UserDep
-from db import SessionDep, create_db_and_tables
+from app.routes import auth
+from app.routes import tickets
+from app.models import *
+from app.routes.auth import UserDep
+from app.db import SessionDep, create_db_and_tables
 
 
 app = FastAPI(

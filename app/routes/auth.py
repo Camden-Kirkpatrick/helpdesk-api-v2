@@ -2,8 +2,8 @@ from datetime import timedelta, datetime
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
-from db import SessionDep
-from models import User, UserCreate, UserPublic, Token
+from app.db import SessionDep
+from app.models import User, UserCreate, UserPublic, Token
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError

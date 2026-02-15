@@ -2,9 +2,9 @@ from fastapi import Query, HTTPException, Path, APIRouter, Depends
 from sqlmodel import select
 from typing import Annotated
 from starlette import status
-from models import *
-from db import SessionDep
-from auth import get_current_user
+from app.models import *
+from app.db import SessionDep
+from app.routes.auth import get_current_user
 
 
 public_tickets_router = APIRouter(
