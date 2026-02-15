@@ -22,7 +22,7 @@ form.addEventListener("submit", async (event) =>
         payload.description = form.description.value.trim();
     }
 
-    if (form.priority.value !== "")
+    if (form.priority.value.trim() !== "")
     {
         const priority = Number(form.priority.value);
 

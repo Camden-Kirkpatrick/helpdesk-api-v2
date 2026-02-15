@@ -1,3 +1,22 @@
+const TOKEN_KEY = "access_token";
+
+function set_token(token)
+{
+    sessionStorage.setItem(TOKEN_KEY, token)
+;}
+
+function get_token()
+{
+    return sessionStorage.getItem(TOKEN_KEY);
+}
+
+function clear_token()
+{
+    sessionStorage.removeItem(TOKEN_KEY);
+}
+
+
+
 async function safeJson(res)
 {
     try
@@ -18,7 +37,6 @@ function extractErrorMessage(data)
     const detail = data.detail;
 
     if (Array.isArray(detail))
-
         return detail.map(e => e.msg).join("\n");
 
     if (typeof detail === "string")
@@ -27,8 +45,19 @@ function extractErrorMessage(data)
     return "";
 }
 
-async function requestOrThrow(url, options)
+async function requestOrThrow(url, options = {})
 {
+    const headers = new Headers(options.headers || {});
+    const token = get_token();
+    const isAuthRoute = url.startsWith("/auth");
+
+    if (token && !headers.has("Authorization") && !isAuthRoute)
+    {
+        headers.set("Authorization", `Bearer ${token}`);
+    }
+
+    options.headers = headers
+
     const res = await fetch(url, options);
     const data = await safeJson(res);
 
@@ -37,7 +66,11 @@ async function requestOrThrow(url, options)
         const msg = extractErrorMessage(data);
         throw new Error(msg || `Request failed (${res.status})`);
     }
+
+    return data
 }
+
+
 
 function valid_ticket_id()
 {
@@ -58,4 +91,74 @@ function valid_ticket_id()
     }
 
     return ticket_id;
+}
+
+
+
+const password_button = document.getElementById("view_pass");
+
+if (password_button != null)
+{
+    password_button.addEventListener("click", () => {
+        const pass_input = document.getElementById("password");
+
+        if (pass_input.type === "password")
+            pass_input.type = "text";
+        else
+            pass_input.type = "password";
+    });
+}
+
+
+
+function logout()
+{
+    sessionStorage.removeItem("access_token");
+    window.location.reload();
+}
+
+async function update_auth_ui()
+{
+    const user_el = document.getElementById("nav-user");
+    const logout_el = document.getElementById("nav-logout");
+
+    const login_el = document.querySelector("a.login-btn");
+    const register_el = document.querySelector("a.register-btn");
+
+    try
+    {
+        const me = await requestOrThrow("/user", {method: "GET"});
+
+        if (user_el)
+        {
+            user_el.style.display = "inline";
+            user_el.textContent =  `Logged in as: ${me.username}`;
+        }
+
+        if (logout_el)
+            logout_el.style.display = "inline";
+
+        if (login_el)
+            login_el.style.display = "none";
+
+        if (register_el)
+            register_el.style.display = "none";
+    }
+
+    catch
+    {
+        if (user_el) user_el.style.display = "none";
+        if (logout_el) logout_el.style.display = "none";
+
+        if (login_el) login_el.style.display = "inline";
+        if (register_el) register_el.style.display = "inline";
+    }
+
+    if (logout_el)
+    {
+        logout_el.onclick = (e) => {
+            e.preventDefault();
+            logout();
+        };
+    }
 }

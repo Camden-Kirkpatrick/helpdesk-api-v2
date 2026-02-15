@@ -7,15 +7,23 @@ body {
     background-color: rgb(106, 137, 167);
 }
 
+.page {
+    width: min(1100px, 92vw);
+    margin: 20px auto 40px;
+}
+
 .form-group input[type="text"],
 .form-group input[type="number"],
+.form-group input[type="password"],
 .form-group textarea {
   width: 100%;
 }
 
 #main-div {
+    /* margin: 28px auto 0;
+    width: min(92vw, 570px); */
     margin: 28px auto 0;
-    width: min(92vw, 570px);
+    max-width: 720px;
     background-color: black;
     border: 2px solid orange;
     box-shadow: -4px 4px rgb(82, 105, 128);
@@ -24,8 +32,10 @@ body {
 }
 
 #card-box {
+    /* margin: 28px auto 0;
+    width: min(92vw, 570px); */
     margin: 28px auto 0;
-    width: min(92vw, 570px);
+    max-width: 900px;
 
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -84,17 +94,58 @@ h3 {
     margin-top: 20px;
 }
 
+a {
+    font-weight: bold;
+}
+
+hr {
+    margin-top: 10px;
+    height: 3px;
+    background-color:
+    orange; border:none
+}
+
 nav {
     margin-top: 5px;
     background-color: rgb(97, 123, 149);
     border-radius: 100vw;
     border: 1px solid black;
-    text-align: center;
+    padding: 10px 14px;
+
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 12px;
 }
 
-a {
+.nav-menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.nav-auth {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-self: end;
+}
+
+#nav-user {
     font-weight: bold;
-    margin: 10px;
+}
+
+nav a {
+    font-weight: bold;
+    text-decoration: none;
+    margin: 0;
+    padding: 8px 10px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+nav a:hover {
+    background-color: rgba(255, 255, 255, 0.15);
 }
 
 .centered {
@@ -110,9 +161,16 @@ a {
     background-color: lightblue;
 }
 
-.form-group
-{
+.form-group {
     margin-top: 15px;
+}
+
+.login-status {
+    position: fixed;
+    bottom: 10px;
+    left: 12px;
+    font-size: 14px;
+    opacity: 0.8;
 }
 
 @media (max-width: 900px) {
@@ -121,8 +179,7 @@ a {
     }
 }
 
-@media (max-width: 600px)
-{
+@media (max-width: 600px) {
     .form-container {
         width: 95%;
         margin: 10px auto;
@@ -130,18 +187,57 @@ a {
     }
 
     nav {
-        border-radius: 12px;
-        padding: 10px;
+        border-radius: 24px;
+
+        padding: 14px 16px;
+
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
     }
 
-    nav a {
+    .nav-menu {
+        grid-column: 1 / -1;
+
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .nav-auth {
+        grid-column: 1 / -1;
+
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+
+        align-items: center;
+        padding-top: 4px;
+    }
+
+    nav a,
+    #nav-user {
+        width: 100%;
         display: block;
-        margin: 8px 0;
+    }
+
+    #nav-user {
+        text-align: left;
+        justify-self: stretch;
+    }
+
+    #nav-logout {
+        text-align: right;
+        justify-self: stretch;
+        padding-right: 4px;
+    }
+
+    .login-btn,
+    .register-btn {
+        justify-self: start;
     }
 
     #card-box {
         grid-template-columns: 1fr;
-    
     }
 
     .card {

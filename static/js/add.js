@@ -28,13 +28,14 @@ form.addEventListener("submit", async (event) =>
         return;
     }
 
+   const payload = {title, description, priority}
+
     try
     {
-        const fd = new FormData(form);
-
         const created = await requestOrThrow("/api/tickets/", {
             method: "POST",
-            body: fd
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
         });
 
         if (created && created.id != null)
