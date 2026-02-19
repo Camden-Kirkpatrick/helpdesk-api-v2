@@ -1,3 +1,4 @@
+// This is the key for the token
 const TOKEN_KEY = "access_token";
 
 function set_token(token)
@@ -34,15 +35,7 @@ function extractErrorMessage(data)
     if (!data || data.detail == null)
         return "";
 
-    const detail = data.detail;
-
-    if (Array.isArray(detail))
-        return detail.map(e => e.msg).join("\n");
-
-    if (typeof detail === "string")
-        return detail;
-
-    return "";
+    return data.detail;
 }
 
 async function requestOrThrow(url, options = {})
