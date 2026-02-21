@@ -89,13 +89,40 @@ async function search_tickets()
 
 
 
+async function search_by_id(ticket_id)
+{
+    const statusEl = document.getElementById("status");
+    statusEl.textContent = "Loading ticket...";
+
+    try
+    {
+        const ticket = await requestOrThrow(`/api/tickets/${ticket_id}`, {method: "GET"});
+
+        statusEl.textContent = "";
+
+        render_tickets([ticket]);
+    }
+    catch (err)
+    {
+        statusEl.textContent = err?.message || "Failed to load ticket";
+    }
+}
+
+
+
 window.addEventListener("load", () => {
     load_all_tickets();
 
-    const form = document.getElementById("search-form");
-    form.addEventListener("submit", (e) => {
+    document.getElementById("search-form").addEventListener("submit", (e) => {
         e.preventDefault();
         search_tickets();
+    });
+
+    document.getElementById("find-by-id").addEventListener("click", () => {
+        const ticket_id = valid_ticket_id();
+        if (!ticket_id) return;
+
+        search_by_id(ticket_id);
     });
 
     document.getElementById("clear-btn").addEventListener("click", () => {
@@ -103,6 +130,7 @@ window.addEventListener("load", () => {
         document.getElementById("q-desc").value =  "";
         document.getElementById("q-priority").value =  "";
         document.getElementById("q-status").value =  "";
+        document.getElementById("ticket_id").value = "";
         load_all_tickets();
     });
 });
