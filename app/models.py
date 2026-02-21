@@ -4,6 +4,7 @@ from datetime import date
 from typing import Annotated
 from pydantic import StringConstraints
 
+# Prevents strings from containing only whitespace
 NonEmptyStr = Annotated[
     str,
     StringConstraints(min_length=1, strip_whitespace=True)
@@ -25,10 +26,12 @@ class TicketBase(SQLModel):
 class Ticket(TicketBase, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
     created: date = Field(default_factory=date.today) # date.today() is run every time a Ticket is created
+    user_id: int
 
 class TicketPublic(TicketBase):
     id: int
     created: date
+    user_id: int
 
 class TicketCreate(SQLModel):
     title: NonEmptyStr
@@ -43,11 +46,11 @@ class TicketUpdate(SQLModel):
 
 
 
-# User and Token Models
+# Token and User Models
 
 class Token(SQLModel):
-    access_token: str
-    token_type: str
+    access_token: NonEmptyStr
+    token_type: NonEmptyStr
 
 class UserBase(SQLModel):
     username: NonEmptyStr
@@ -55,7 +58,7 @@ class UserBase(SQLModel):
 class User(UserBase, table=True):
     username: NonEmptyStr = Field(unique=True, index=True)
     id: int | None = Field(default=None, primary_key=True, index=True)
-    hashed_password: str
+    hashed_password: NonEmptyStr
 
 class UserPublic(UserBase):
     id: int

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Tickets</title>
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/tickets.js"></script>
+</head>
+<body>
+
+    <form id="search-form" style="margin-bottom: 12px;">
+        <input id="q-title" placeholder="title contains..." />
+        <input id="q-desc" placeholder="description contains..." />
+        <input id="q-priority" type="number" min="1" max="5" placeholder="priority (1-5)" />
+        <select id="q-status">
+            <option value="">status (any)</option>
+            <option value="open">open</option>
+            <option value="in_progress">in_progress</option>
+            <option value="closed">closed</option>
+        </select>
+
+        <button type="submit">Search</button>
+        <button type="button" id="clear-btn">Clear</button>
+    </form>
+
+    <div id="status"></div>
+    <pre id="output"></pre>
+    
+</body>
+</html>

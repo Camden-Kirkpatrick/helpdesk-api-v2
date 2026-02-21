@@ -31,7 +31,7 @@ ALGORITHM = "HS256"
 
 # Use this to hash the user's password
 bcrypt_context = CryptContext(schemes=["bcrypt"])
-# When a route needs authentication, look for a Bearer token in the request heade
+# When a route needs authentication, look for a Bearer token in the request header
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token", auto_error=False)
 
 
@@ -40,7 +40,7 @@ oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token", auto_error=False)
 def create_user(
     user: UserCreate,
     session: SessionDep
-):
+) -> User:
     """Register a new user account.
 
     Creates a user with a hashed password and stores it in the database.
@@ -79,7 +79,7 @@ def create_user(
 
 
 @router.post("/token", response_model=Token)
-async def login_for_access_token(
+def login_for_access_token(
     user: UserCreate,
     session: SessionDep
 ):
@@ -116,7 +116,11 @@ async def login_for_access_token(
     }
 
 
-def authenticate_user(username: str, password: str, session: SessionDep):
+def authenticate_user(
+    username: str,
+    password: str,
+    session: SessionDep
+) -> User:
     """Authenticates a user.
 
     The user to be logged in is grabbed from the db.
@@ -146,7 +150,11 @@ def authenticate_user(username: str, password: str, session: SessionDep):
     return user
 
 
-def create_access_token(username: str, user_id: int, expires_delta: timedelta):
+def create_access_token(
+    username: str,
+    user_id: int,
+    expires_delta: timedelta
+) -> str:
     """Creates an access token.
 
     User information is stored in a dictionary, along with an expiration for the token.
@@ -172,7 +180,9 @@ def create_access_token(username: str, user_id: int, expires_delta: timedelta):
 
 # FastAPI runs oauth2_bearer (a dependency) to extract the Bearer token
 # from the Authorization header, then passes the token string into this function.
-async def get_current_user(token: Annotated[str | None, Depends(oauth2_bearer)]):
+async def get_current_user(
+    token: Annotated[str | None, Depends(oauth2_bearer)]
+) -> dict:
     """Returns the user currently logged in.
 
     The token for the current user is decoded, and the user's info is stored, then returned.

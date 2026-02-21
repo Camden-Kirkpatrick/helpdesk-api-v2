@@ -4,7 +4,7 @@ from typing import Annotated
 from starlette import status
 from app.models import *
 from app.db import SessionDep
-from app.routes.auth import get_current_user
+from app.routes.auth import get_current_user, UserDep
 
 
 public_tickets_router = APIRouter(
@@ -22,9 +22,10 @@ private_tickets_router = APIRouter(
 @public_tickets_router.get("/", response_model=list[TicketPublic])
 def read_tickets(
     session: SessionDep,
+    current_user: UserDep,
     offset: int = 0,
     limit: Annotated[int, Query(le=100)] = 100,
-) -> list[Ticket]:
+) -> list[TicketPublic]:
     """Return a list of every Ticket.
 
     Args:
@@ -39,7 +40,7 @@ def read_tickets(
         None
     """
     
-    tickets = session.exec(select(Ticket).offset(offset).limit(limit)).all()
+    tickets = session.exec(select(Ticket).where(Ticket.user_id == current_user["id"]).offset(offset).limit(limit)).all()
     return tickets
 
 
@@ -53,7 +54,7 @@ def query_ticket_by_parameters(
     status: TicketStatus | None = None,
     offset: int = 0,
     limit: int = Query(default=100, le=100),
-) -> list[Ticket]:
+) -> list[TicketPublic]:
     """Search for a Ticket via query parameters.
 
     Search for a Ticket by using its title, description, priority, or status.
@@ -72,16 +73,16 @@ def query_ticket_by_parameters(
         list[Ticket]: A list of tickets that meet all the query parameters.
 
     Raises:
-        HTTPException(404): If no Tickets were found that meet all the query parameters.
+        None
     """
     
     stmt = select(Ticket)
 
     if title is not None:
-        stmt = stmt.where(Ticket.title.ilike(title))
+        stmt = stmt.where(Ticket.title.ilike(f"%{title}%"))
 
     if description is not None:
-        stmt = stmt.where(Ticket.description.ilike(description))
+        stmt = stmt.where(Ticket.description.ilike(f"%{description}%"))
 
     if priority is not None:
         stmt = stmt.where(Ticket.priority == priority)
@@ -90,11 +91,6 @@ def query_ticket_by_parameters(
         stmt = stmt.where(Ticket.status == status)
 
     tickets = session.exec(stmt.offset(offset).limit(limit)).all()
-
-    if len(tickets) == 0:
-        raise HTTPException(
-            status_code=404, detail="The search query returned no results"
-        )
         
     return tickets
 
@@ -103,8 +99,8 @@ def query_ticket_by_parameters(
 @public_tickets_router.get("/{ticket_id}", response_model=TicketPublic)
 def query_ticket_by_id(
     session: SessionDep,
-    ticket_id: int = Path(gt=0)
-) -> Ticket:
+    ticket_id: int = Path(ge=1)
+) -> TicketPublic:
     """Returns a Ticket given its id.
 
     Args:
@@ -118,8 +114,9 @@ def query_ticket_by_id(
         HTTPException(404): If no Ticket was found with id == ticket_id.
     """
 
-    # Search using the ticket's id, which is the primary key in the DB
+    # Search using the ticket's id, which is the primary key in the DB.
     ticket = session.get(Ticket, ticket_id)
+
     if not ticket:
         raise HTTPException(
             status_code=404, detail=f"Ticket with {ticket_id=} does not exist"
@@ -132,6 +129,7 @@ def query_ticket_by_id(
 @private_tickets_router.post("/", response_model=TicketPublic, status_code=status.HTTP_201_CREATED)
 def add_ticket(
     session: SessionDep,
+    current_user: UserDep,
     new_ticket: TicketCreate
 ) -> TicketPublic:
     """Add a Ticket to the database.
@@ -144,21 +142,14 @@ def add_ticket(
         TicketPublic: The Ticket that the user created.
 
     Raises:
-        HTTPException(422): If the user did not provide data in all required fields.
+        None
     """
-
-    title = new_ticket.title.strip()
-    if not title:
-        raise HTTPException(status_code=422, detail="Title cannot be blank")
-    
-    description = new_ticket.description.strip()
-    if not description:
-        raise HTTPException(status_code=422, detail="Description cannot be blank")
     
     ticket = Ticket(
-        title=title,
-        description=description,
+        title=new_ticket.title,
+        description=new_ticket.description,
         priority=new_ticket.priority,
+        user_id=current_user["id"]
     )
 
     session.add(ticket)
@@ -170,9 +161,9 @@ def add_ticket(
 
 @private_tickets_router.patch("/{ticket_id}", response_model=TicketPublic)
 def update_ticket(
-    ticket_id: int,
     ticket: TicketUpdate,
-    session: SessionDep
+    session: SessionDep,
+    ticket_id: int = Path(ge=1)
 ) -> TicketPublic:
     """Update a Ticket in the database.
 
@@ -194,27 +185,16 @@ def update_ticket(
         raise HTTPException(
             status_code=404, detail=f"Ticket with {ticket_id=} does not exist"
         )
-    
-    if ticket.title is not None:
-        if ticket.title.strip() != "":
-            db_ticket.title = ticket.title
-        else:
-            raise HTTPException(
-                status_code=422, detail=f"title cannot be empty"
-            )
-        
-    if ticket.description is not None:
-        if ticket.description.strip() != "":
-            db_ticket.description = ticket.description
-        else:
-            raise HTTPException(
-                status_code=422, detail=f"description cannot be empty"
-            )
 
-    if ticket.priority is not None:
-        db_ticket.priority = ticket.priority
-    if ticket.status is not None:
-        db_ticket.status = ticket.status
+    # Get a dictionary of all the fields with the new values.
+    update_data = ticket.model_dump(exclude_unset=True)
+
+    if not update_data:
+        raise HTTPException(422, "At least one field must be provided")
+
+    # Update each field to the new value provided by the user.
+    for key, value in update_data.items():
+        setattr(db_ticket, key, value)
 
     session.add(db_ticket)
     session.commit()
@@ -223,12 +203,23 @@ def update_ticket(
 
 
 
-# Delete Ticket
 @private_tickets_router.delete("/{ticket_id}", response_model=TicketPublic)
 def delete_ticket(
-    ticket_id: int,
-    session: SessionDep
+    session: SessionDep,
+    ticket_id: int = Path(ge=1)
 ) -> TicketPublic:
+    """Delete a Ticket in the database.
+
+    Args:
+        ticket_id (int): The id of the Ticket to be deleted.
+        session (SessionDep): Database session injected by FastAPI.
+
+    Returns:
+        TicketPublic: The Ticket that the user deleted.
+
+    Raises:
+        HTTPException(404): If no Ticket was found with id == ticket_id.
+    """
     
     db_ticket = session.get(Ticket, ticket_id)
 
