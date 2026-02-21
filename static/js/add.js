@@ -6,7 +6,7 @@ form.addEventListener("submit", async (event) =>
 
     const title = form.title.value.trim();
     const description = form.description.value.trim();
-    const rawPriority = form.priority.value.trim();
+    const raw_priority = form.priority.value.trim();
 
     if (title === "")
     {
@@ -20,13 +20,8 @@ form.addEventListener("submit", async (event) =>
         return;
     }
 
-    const priority = Number(rawPriority);
-
-    if (!Number.isInteger(priority) || priority < 1 || priority > 5)
-    {
-        alert("priority must be an integer between 1 and 5");
-        return;
-    }
+    const priority = validate_priority(raw_priority);
+    if (priority === null) return;
 
    const payload = {title, description, priority}
 

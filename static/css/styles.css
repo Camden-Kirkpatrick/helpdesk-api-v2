@@ -20,8 +20,6 @@ body {
 }
 
 #main-div {
-    /* margin: 28px auto 0;
-    width: min(92vw, 570px); */
     margin: 28px auto 0;
     max-width: 720px;
     background-color: black;
@@ -32,8 +30,6 @@ body {
 }
 
 #card-box {
-    /* margin: 28px auto 0;
-    width: min(92vw, 570px); */
     margin: 28px auto 0;
     max-width: 900px;
 
@@ -171,6 +167,14 @@ nav a:hover {
     left: 12px;
     font-size: 14px;
     opacity: 0.8;
+}
+
+#q-priority {
+    min-width: 100px;
+}
+
+#ticket-id, #find-by-id {
+    margin-top: 20px;
 }
 
 @media (max-width: 900px) {

@@ -88,6 +88,21 @@ function valid_ticket_id()
 
 
 
+function validate_priority(raw_priority)
+{
+    const priority = Number(raw_priority);
+
+    if (!Number.isInteger(priority) || priority < 1 || priority > 5)
+    {
+        alert("priority must be an integer between 1 and 5");
+        return null;
+    }
+
+    return priority;
+}
+
+
+
 const password_button = document.getElementById("view_pass");
 
 if (password_button != null)

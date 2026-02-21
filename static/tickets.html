@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Tickets</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
     <script src="/static/js/api.js"></script>
     <script src="/static/js/tickets.js"></script>
 </head>
@@ -18,14 +19,21 @@
             <option value="open">open</option>
             <option value="in_progress">in_progress</option>
             <option value="closed">closed</option>
-        </select>
+        </select>   
 
         <button type="submit">Search</button>
         <button type="button" id="clear-btn">Clear</button>
+
+        <br>
+
+        <input id="ticket-id" placeholder="Ticket ID">
+        <button id="find-by-id">Find Ticket</button> 
     </form>
 
+    <br>
+
     <div id="status"></div>
-    <pre id="output"></pre>
+    <pre id="tickets"></pre>
     
 </body>
 </html>

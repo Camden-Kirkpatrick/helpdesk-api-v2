@@ -22,15 +22,11 @@ form.addEventListener("submit", async (event) =>
         payload.description = form.description.value.trim();
     }
 
+    const raw_priority = form.priority.value.trim();
     if (form.priority.value.trim() !== "")
     {
-        const priority = Number(form.priority.value);
-
-        if (!Number.isInteger(priority) || priority < 1 || priority > 5)
-        {
-            alert("priority must be an integer between 1 and 5");
-            return;
-        }
+        const priority = validate_priority(raw_priority);
+        if (priority === null) return;
 
         payload.priority = priority;
     }

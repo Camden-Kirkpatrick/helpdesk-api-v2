@@ -48,6 +48,7 @@ def read_tickets(
 @public_tickets_router.get("/search", response_model=list[TicketPublic])
 def query_ticket_by_parameters(
     session: SessionDep,
+    current_user: UserDep,
     title: str | None = None,
     description: str | None = None,
     priority: int | None = Query(default=None, ge=1, le=5),
@@ -90,7 +91,7 @@ def query_ticket_by_parameters(
     if status is not None:
         stmt = stmt.where(Ticket.status == status)
 
-    tickets = session.exec(stmt.offset(offset).limit(limit)).all()
+    tickets = session.exec(stmt.where(Ticket.user_id == current_user["id"]).offset(offset).limit(limit)).all()
         
     return tickets
 
