@@ -14,7 +14,13 @@ function render_tickets(tickets)
     for (const t of tickets)
     {
         const li = document.createElement("li");
-        li.innerHTML = `<strong>Ticket #${t.id}</strong> <ul><li>Title: ${t.title}</li> <li>Description: ${t.description}</li> <li>Priority: ${t.priority}</li> <li>Status: ${t.status}</li></ul>`;
+        li.innerHTML = `<strong>Ticket id=${t.id}</strong>
+                        <ul>
+                            <li>Title: ${t.title}</li>
+                            <li>Description: ${t.description}</li>
+                            <li>Priority: ${t.priority}</li>
+                            <li>Status: ${t.status}</li>
+                        </ul>`;
         list.appendChild(li);
     }
 }
@@ -42,14 +48,14 @@ async function load_all_tickets()
 function build_search_url()
 {
     const title = document.getElementById("q-title").value.trim();
-    const desciption = document.getElementById("q-desc").value.trim();
+    const description = document.getElementById("q-desc").value.trim();
     const raw_priority = document.getElementById("q-priority").value.trim();
     const status = document.getElementById("q-status").value.trim();
 
     const params = new URLSearchParams();
 
     if (title) params.set("title", title);
-    if (desciption) params.set("description", desciption);
+    if (description) params.set("description", desrciption);
 
     if (raw_priority !== "")
     {
@@ -94,6 +100,9 @@ async function search_by_id(ticket_id)
     const statusEl = document.getElementById("status");
     statusEl.textContent = "Loading ticket...";
 
+    const list = document.getElementById("tickets");
+    list.textContent = "";
+
     try
     {
         const ticket = await requestOrThrow(`/api/tickets/${ticket_id}`, {method: "GET"});
@@ -104,7 +113,7 @@ async function search_by_id(ticket_id)
     }
     catch (err)
     {
-        statusEl.textContent = err?.message || "Failed to load ticket";
+        statusEl.textContent = err?.message || "Search failed";
     }
 }
 
@@ -118,7 +127,8 @@ window.addEventListener("load", () => {
         search_tickets();
     });
 
-    document.getElementById("find-by-id").addEventListener("click", () => {
+    document.getElementById("find-by-id").addEventListener("click", (e) => {
+        e.preventDefault();
         const ticket_id = valid_ticket_id();
         if (!ticket_id) return;
 

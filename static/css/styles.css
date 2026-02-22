@@ -24,7 +24,7 @@ body {
     max-width: 720px;
     background-color: black;
     border: 2px solid orange;
-    box-shadow: -4px 4px rgb(82, 105, 128);
+    box-shadow: -4px 4px 6px rgb(82, 105, 128);
     border-radius: 4px;
     color: white;
 }
@@ -157,6 +157,16 @@ nav a:hover {
     background-color: lightblue;
 }
 
+.tickets-container {
+    width: 60%;
+    margin: 10px auto;
+    padding: 10px;
+    border: 2px solid;
+    border-radius: 10px;
+    color: white;
+    background-color: rgb(44, 45, 45);
+}
+
 .form-group {
     margin-top: 15px;
 }
@@ -175,6 +185,23 @@ nav a:hover {
 
 #ticket-id, #find-by-id {
     margin-top: 20px;
+}
+
+#status, #tickets {
+    margin-left: 20px;
+}
+
+h1, #h1-search {
+    margin-bottom: 20px;
+    border-bottom: 2px solid black;
+}
+
+h2 {
+    margin-bottom: 20px;
+}
+
+#h1-helpdesk {
+    border: none;
 }
 
 @media (max-width: 900px) {

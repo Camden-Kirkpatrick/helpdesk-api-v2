@@ -46,14 +46,15 @@ form.addEventListener("submit", async (event) =>
     try
     {
         // Update ticket
-        await requestOrThrow(`/api/tickets/${ticket_id}`, {
+       const updated = await requestOrThrow(`/api/tickets/${ticket_id}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
 
         // Success
-        window.location.href = "/api/tickets/" + ticket_id;
+        alert(`Ticket id=${updated.id} updated`);
+        window.location.href = "/static/tickets.html";
     }
     catch (err)
     {

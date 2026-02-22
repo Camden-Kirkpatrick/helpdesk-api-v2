@@ -6,35 +6,28 @@ from app.models import *
 from app.db import SessionDep
 from app.routes.auth import get_current_user, UserDep
 
-
-public_tickets_router = APIRouter(
+# Authentication is required via dependency injection
+tickets_router = APIRouter(
     prefix="/api/tickets",
     tags=["tickets"]
 )
 
-# Authentication is required via dependency injection
-private_tickets_router = APIRouter(
-    prefix="/api/tickets",
-    tags=["tickets"],
-    dependencies=[Depends(get_current_user)]
-)
-
-@public_tickets_router.get("/", response_model=list[TicketPublic])
+@tickets_router.get("/", response_model=list[TicketPublic])
 def read_tickets(
     session: SessionDep,
     current_user: UserDep,
     offset: int = 0,
     limit: Annotated[int, Query(le=100)] = 100,
 ) -> list[TicketPublic]:
-    """Return a list of every Ticket.
+    """Return a list of tickets owned by the current user.
 
     Args:
-        offset (int): Allows you to skip the first 'n' Tickets.
-        limit (int): Allows you to limit how many Tickets are returned.
+        offset (int): Allows you to skip the first 'n' tickets.
+        limit (int): Allows you to limit how many tickets are returned.
         session (SessionDep): Database session injected by FastAPI.
 
     Returns:
-        list[Ticket]: Returns up to 100 Tickets, or the limit via query parameters.
+        list[Ticket]: Returns up to 100 tickets owned by the user, or the limit via query parameters.
 
     Raises:
         None
@@ -45,7 +38,7 @@ def read_tickets(
 
 
 
-@public_tickets_router.get("/search", response_model=list[TicketPublic])
+@tickets_router.get("/search", response_model=list[TicketPublic])
 def query_ticket_by_parameters(
     session: SessionDep,
     current_user: UserDep,
@@ -62,16 +55,16 @@ def query_ticket_by_parameters(
     You can also combine any number of these query parameters.
 
     Args:
-        title (str | None): The Ticket's title.
-        description (str | None): The Ticket's description.
-        priority (int | None): The Ticket's priority.
-        status (TicketStatus | None): The Ticket's status.
-        offset (int): Allows you to skip the first 'n' Tickets.
-        limit (int): Allows you to limit how many Tickets are returned.
+        title (str | None): The ticket's title.
+        description (str | None): The ticket's description.
+        priority (int | None): The ticket's priority.
+        status (TicketStatus | None): The ticket's status.
+        offset (int): Allows you to skip the first 'n' tickets.
+        limit (int): Allows you to limit how many tickets are returned.
         session (SessionDep): Database session injected by FastAPI.
 
     Returns:
-        list[Ticket]: A list of tickets that meet all the query parameters.
+        list[TicketPublic]: A list of tickets owned by the user, that meet all the query parameters.
 
     Raises:
         None
@@ -91,79 +84,91 @@ def query_ticket_by_parameters(
     if status is not None:
         stmt = stmt.where(Ticket.status == status)
 
-    tickets = session.exec(stmt.where(Ticket.user_id == current_user["id"]).offset(offset).limit(limit)).all()
+    tickets = session.exec(
+        stmt.where(
+            Ticket.user_id == current_user["id"]
+        ).offset(offset)
+         .limit(limit)).all()
         
     return tickets
 
 
 
-@public_tickets_router.get("/{ticket_id}", response_model=TicketPublic)
+@tickets_router.get("/{ticket_id}", response_model=TicketPublic)
 def query_ticket_by_id(
     session: SessionDep,
+    current_user: UserDep,
     ticket_id: int = Path(ge=1)
 ) -> TicketPublic:
-    """Returns a Ticket given its id.
+    """Return a ticket by id owned by the current user.
 
     Args:
-        ticket_id (int): The id of the Ticket to be returned.
+        ticket_id (int): The id of the ticket to be returned.
         session (SessionDep): Database session injected by FastAPI.
 
     Returns:
-        Ticket: Ticket with id == ticket_id.
+        Ticket: ticket owned by the user with id == ticket_id.
 
     Raises:
-        HTTPException(404): If no Ticket was found with id == ticket_id.
+        HTTPException(404): If no ticket was found with id == ticket_id.
     """
 
     # Search using the ticket's id, which is the primary key in the DB.
-    ticket = session.get(Ticket, ticket_id)
+    #ticket = session.get(Ticket, ticket_id) THIS IS WHAT I HAD BEFORE
+    db_ticket = session.exec(
+        select(Ticket).where(
+            Ticket.id == ticket_id,
+            Ticket.user_id == current_user["id"]
+        )
+    ).first()
 
-    if not ticket:
+    if db_ticket is None:
         raise HTTPException(
             status_code=404, detail=f"Ticket with {ticket_id=} does not exist"
         )
     
-    return ticket
+    return db_ticket
 
 
 
-@private_tickets_router.post("/", response_model=TicketPublic, status_code=status.HTTP_201_CREATED)
+@tickets_router.post("/", response_model=TicketPublic, status_code=status.HTTP_201_CREATED)
 def add_ticket(
     session: SessionDep,
     current_user: UserDep,
-    new_ticket: TicketCreate
+    ticket: TicketCreate
 ) -> TicketPublic:
     """Add a Ticket to the database.
 
     Args:
-        new_ticket (TicketCreate): The incoming JSON data from the user.
+        ticket (TicketCreate): The incoming JSON data from the user.
         session (SessionDep): Database session injected by FastAPI.
 
     Returns:
-        TicketPublic: The Ticket that the user created.
+        TicketPublic: The ticket that the user created.
 
     Raises:
         None
     """
     
-    ticket = Ticket(
-        title=new_ticket.title,
-        description=new_ticket.description,
-        priority=new_ticket.priority,
+    db_ticket = Ticket(
+        title=ticket.title,
+        description=ticket.description,
+        priority=ticket.priority,
         user_id=current_user["id"]
     )
 
-    session.add(ticket)
+    session.add(db_ticket)
     session.commit()
-    session.refresh(ticket)
-    return ticket
+    session.refresh(db_ticket)
+    return db_ticket
 
 
 
-@private_tickets_router.patch("/{ticket_id}", response_model=TicketPublic)
+@tickets_router.patch("/{ticket_id}", response_model=TicketPublic)
 def update_ticket(
     ticket: TicketUpdate,
     session: SessionDep,
+    current_user: UserDep,
     ticket_id: int = Path(ge=1)
 ) -> TicketPublic:
     """Update a Ticket in the database.
@@ -174,15 +179,20 @@ def update_ticket(
         session (SessionDep): Database session injected by FastAPI.
 
     Returns:
-        TicketPublic: The Ticket that the user updated.
+        TicketPublic: The ticket that the user updated.
 
     Raises:
-        HTTPException(422): If the user did not provide data in all required fields.
+        HTTPException(422): If no update fields were provided.
     """
     
-    db_ticket = session.get(Ticket, ticket_id)
+    db_ticket = session.exec(
+        select(Ticket).where(
+            Ticket.id == ticket_id,
+            Ticket.user_id == current_user["id"]
+        )
+    ).first()
 
-    if not db_ticket:
+    if db_ticket is None:
         raise HTTPException(
             status_code=404, detail=f"Ticket with {ticket_id=} does not exist"
         )
@@ -204,27 +214,33 @@ def update_ticket(
 
 
 
-@private_tickets_router.delete("/{ticket_id}", response_model=TicketPublic)
+@tickets_router.delete("/{ticket_id}", response_model=TicketPublic)
 def delete_ticket(
     session: SessionDep,
+    current_user: UserDep,
     ticket_id: int = Path(ge=1)
 ) -> TicketPublic:
     """Delete a Ticket in the database.
 
     Args:
-        ticket_id (int): The id of the Ticket to be deleted.
+        ticket_id (int): The id of the ticket to be deleted.
         session (SessionDep): Database session injected by FastAPI.
 
     Returns:
-        TicketPublic: The Ticket that the user deleted.
+        TicketPublic: The ticket that the user deleted.
 
     Raises:
-        HTTPException(404): If no Ticket was found with id == ticket_id.
+        HTTPException(404): If no ticket was found with id == ticket_id.
     """
     
-    db_ticket = session.get(Ticket, ticket_id)
+    db_ticket = session.exec(
+        select(Ticket).where(
+            Ticket.id == ticket_id,
+            Ticket.user_id == current_user["id"]
+        )
+    ).first()
 
-    if not db_ticket:
+    if db_ticket is None:
         raise HTTPException(
             status_code=404, detail=f"Ticket with {ticket_id=} does not exist"
         )

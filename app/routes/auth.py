@@ -203,7 +203,7 @@ async def get_current_user(
     if token is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="You must be logged in to do that"
+            detail="You must be logged in"
         )
     
     try:
@@ -216,7 +216,7 @@ async def get_current_user(
         if username is None or user_id is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Could not validate user"
+                detail="Username or id is not present"
             )
         
         return {"username": username, "id": user_id}

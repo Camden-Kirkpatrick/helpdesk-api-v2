@@ -11,11 +11,12 @@ form.addEventListener("submit", async event => {
     try
     {
         // Update ticket
-        await requestOrThrow(`/api/tickets/${ticket_id}`, {
+       const deleted =  await requestOrThrow(`/api/tickets/${ticket_id}`, {
             method: "DELETE"
         });
 
-        window.location.href = "/api/tickets/";
+        alert(`Ticket id=${deleted.id} deleted`);
+        window.location.href = "/static/tickets.html";
     }
     catch (err)
     {

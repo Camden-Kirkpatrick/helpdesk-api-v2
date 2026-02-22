@@ -1,11 +1,11 @@
-from fastapi import FastAPI, Query, Form, HTTPException, Path
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from app.routes import auth
 from app.routes import tickets
 from app.models import *
 from app.routes.auth import UserDep
-from app.db import SessionDep, create_db_and_tables
+from app.db import create_db_and_tables
 
 
 app = FastAPI(
@@ -31,10 +31,6 @@ async def favicon():
 def index():
     return FileResponse("static/index.html")
 
-
 @app.get("/user", response_model=UserPublic)
-def get_user(user: UserDep, session: SessionDep):
-    db_user = session.get(User, user["id"])
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return db_user
+def get_user(user: UserDep):
+    return user
