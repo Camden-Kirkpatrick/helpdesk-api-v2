@@ -9,7 +9,7 @@ Provides:
 Uses OAuth2PasswordBearer with JWT-based authentication.
 """
 
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, UTC
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
@@ -172,7 +172,7 @@ def create_access_token(
         None
     """
     encode = {"sub": username, "id": user_id}
-    expires = datetime.utcnow() + expires_delta
+    expires = datetime.now(UTC) + expires_delta
     encode.update({"exp": expires})
     
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)

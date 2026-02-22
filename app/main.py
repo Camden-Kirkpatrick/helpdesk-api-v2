@@ -15,8 +15,7 @@ app = FastAPI(
 )
 
 app.include_router(auth.router)
-app.include_router(tickets.public_tickets_router)
-app.include_router(tickets.private_tickets_router)
+app.include_router(tickets.tickets_router)
 app.mount("/static", StaticFiles(directory="static", html=True), name="static")
 
 @app.on_event("startup")
