@@ -3,3 +3,4 @@ __pycache__
 database.db
 test_database.db
 .pytest_cache
+.env

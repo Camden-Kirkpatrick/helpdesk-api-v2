@@ -19,6 +19,8 @@ from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from sqlmodel import select
+import os
+
 
 
 router = APIRouter(
@@ -26,7 +28,7 @@ router = APIRouter(
     tags=["auth"]
 )
 
-SECRET_KEY = "vw07yui0LbRUWTzj5Qyx7gJ5K5ADVqz86ReYeZgoFUw"
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
 # Use this to hash the user's password
