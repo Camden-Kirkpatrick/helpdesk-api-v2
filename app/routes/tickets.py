@@ -12,7 +12,11 @@ tickets_router = APIRouter(
     tags=["tickets"]
 )
 
-@tickets_router.get("/", response_model=list[TicketPublic])
+@tickets_router.get(
+    "/",
+    response_model=list[TicketPublic],
+    status_code=status.HTTP_200_OK
+)
 def read_tickets(
     session: SessionDep,
     current_user: UserDep,
@@ -38,7 +42,11 @@ def read_tickets(
 
 
 
-@tickets_router.get("/search", response_model=list[TicketPublic])
+@tickets_router.get(
+    "/search",
+    response_model=list[TicketPublic],
+    status_code=status.HTTP_200_OK
+)
 def query_ticket_by_parameters(
     session: SessionDep,
     current_user: UserDep,
@@ -94,7 +102,11 @@ def query_ticket_by_parameters(
 
 
 
-@tickets_router.get("/{ticket_id}", response_model=TicketPublic)
+@tickets_router.get(
+    "/{ticket_id}",
+    response_model=TicketPublic,
+    status_code=status.HTTP_200_OK
+)
 def query_ticket_by_id(
     session: SessionDep,
     current_user: UserDep,
@@ -124,14 +136,19 @@ def query_ticket_by_id(
 
     if db_ticket is None:
         raise HTTPException(
-            status_code=404, detail=f"Ticket with {ticket_id=} does not exist"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ticket with {ticket_id=} does not exist"
         )
     
     return db_ticket
 
 
 
-@tickets_router.post("/", response_model=TicketPublic, status_code=status.HTTP_201_CREATED)
+@tickets_router.post(
+    "/",
+    response_model=TicketPublic,
+    status_code=status.HTTP_201_CREATED
+)
 def add_ticket(
     session: SessionDep,
     current_user: UserDep,
@@ -164,7 +181,11 @@ def add_ticket(
 
 
 
-@tickets_router.patch("/{ticket_id}", response_model=TicketPublic)
+@tickets_router.patch(
+    "/{ticket_id}",
+    response_model=TicketPublic,
+    status_code=status.HTTP_200_OK
+)
 def update_ticket(
     ticket: TicketUpdate,
     session: SessionDep,
@@ -194,14 +215,18 @@ def update_ticket(
 
     if db_ticket is None:
         raise HTTPException(
-            status_code=404, detail=f"Ticket with {ticket_id=} does not exist"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ticket with {ticket_id=} does not exist"
         )
 
     # Get a dictionary of all the fields with the new values.
     update_data = ticket.model_dump(exclude_unset=True)
 
     if not update_data:
-        raise HTTPException(422, "At least one field must be provided")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="At least one field must be provided"
+        )
 
     # Update each field to the new value provided by the user.
     for key, value in update_data.items():
@@ -214,7 +239,11 @@ def update_ticket(
 
 
 
-@tickets_router.delete("/{ticket_id}", response_model=TicketPublic)
+@tickets_router.delete(
+    "/{ticket_id}",
+    response_model=TicketPublic,
+    status_code=status.HTTP_200_OK
+)
 def delete_ticket(
     session: SessionDep,
     current_user: UserDep,
@@ -242,7 +271,8 @@ def delete_ticket(
 
     if db_ticket is None:
         raise HTTPException(
-            status_code=404, detail=f"Ticket with {ticket_id=} does not exist"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ticket with {ticket_id=} does not exist"
         )
 
     session.delete(db_ticket)

@@ -1,5 +1,5 @@
 __pycache__
 .venv
 database.db
-test_databse.db
+test_database.db
 .pytest_cache

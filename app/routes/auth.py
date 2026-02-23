@@ -36,7 +36,11 @@ oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token", auto_error=False)
 
 
 
-@router.post("/", response_model=UserPublic, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    response_model=UserPublic,
+    status_code=status.HTTP_201_CREATED
+)
 def create_user(
     user: UserCreate,
     session: SessionDep
@@ -78,10 +82,14 @@ def create_user(
     return create_user_model
 
 
-@router.post("/token", response_model=Token)
+@router.post(
+    "/token",
+    response_model=Token,
+    status_code=status.HTTP_200_OK
+)
 def login_for_access_token(
     user: UserCreate,
-    session: SessionDep
+    session: SessionDep,
 ):
     """Login as a user.
 
