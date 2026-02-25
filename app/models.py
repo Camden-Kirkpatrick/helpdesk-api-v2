@@ -23,6 +23,7 @@ class TicketBase(SQLModel):
     priority: int = Field(ge=1, le=5)
     status: TicketStatus = TicketStatus.open
 
+# Ticket stored in the database
 class Ticket(TicketBase, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
     created: date = Field(default_factory=date.today) # date.today() is run every time a Ticket is created
@@ -55,6 +56,7 @@ class Token(SQLModel):
 class UserBase(SQLModel):
     username: NonEmptyStr
 
+# User stored in the database
 class User(UserBase, table=True):
     username: NonEmptyStr = Field(unique=True, index=True)
     id: int | None = Field(default=None, primary_key=True, index=True)

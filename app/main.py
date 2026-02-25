@@ -30,7 +30,7 @@ async def favicon():
 def index():
     return FileResponse("static/index.html")
 
-# This is used to display who is currently logged in =
+# This is used to display who is currently logged in
 @app.get("/user", response_model=UserPublic)
 def get_user(user: UserDep):
     return user

@@ -4,6 +4,7 @@ form.addEventListener("submit", async (event) =>
 {
     event.preventDefault();
 
+    // Get the form data
     const title = form.title.value.trim();
     const description = form.description.value.trim();
     const raw_priority = form.priority.value.trim();
@@ -16,7 +17,7 @@ form.addEventListener("submit", async (event) =>
 
     const payload = {};
 
-    // Get the data the user wants to update
+    // Add form data to the payload if it's not empty
     
     if (title)
         payload.title = title;

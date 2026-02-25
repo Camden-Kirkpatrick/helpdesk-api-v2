@@ -58,7 +58,7 @@ function build_search_url()
     const params = new URLSearchParams();
 
     // Add query parameters if the input fields are not empty
-    // Also ensure all data is valid
+    // and validate the form data
 
     if (title) params.set("title", title);
 
@@ -143,12 +143,13 @@ async function search_by_id(ticket_id)
 
     try
     {
+        // Make the API request
         const ticket = await requestOrThrow(`/api/tickets/${ticket_id}`, {method: "GET"});
-
+        // Success
         statusEl.textContent = "";
-
         render_tickets([ticket]);
     }
+    // Failure
     catch (err)
     {
         statusEl.textContent = err?.message || "Search failed";

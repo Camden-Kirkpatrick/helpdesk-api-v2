@@ -10,6 +10,7 @@ form.addEventListener("submit", async (event) =>
     const raw_priority = form.priority.value.trim();
 
     // Validate the form data
+
     if (title === "")
     {
         alert("title is required");
@@ -25,8 +26,8 @@ form.addEventListener("submit", async (event) =>
     const priority = validate_priority(raw_priority);
     if (priority === null) return;
 
-    // Create the payload if the form data is valid
-   const payload = {title, description, priority};
+    // Create the payload from the form data
+    const payload = {title, description, priority};
 
     try
     {

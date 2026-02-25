@@ -163,7 +163,7 @@ async function update_auth_ui()
     if (!user_el || !logout_el || !login_el || !register_el)
         return;
 
-    // Succeeds if the user is looged in
+    // Succeeds if the user is logged in
     try
     {
         const me = await requestOrThrow("/user", {method: "GET"});

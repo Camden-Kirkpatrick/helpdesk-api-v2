@@ -4,11 +4,12 @@ form.addEventListener("submit", async (event) =>
 {
     event.preventDefault();
 
-    // Get the data from the form
+    // Get the form data
     const username = form.username.value.trim()
     const password = form.password.value
 
     // Validate the form data
+
     if (!username)
     {
         alert("username is required");
@@ -21,6 +22,7 @@ form.addEventListener("submit", async (event) =>
         return;
     }
 
+    // Create the payload from the form data
     const payload = {username, password}
 
     try
@@ -36,7 +38,6 @@ form.addEventListener("submit", async (event) =>
         alert(`Logged in as: ${payload.username}`);
         // Put the token in session storage
         set_token(data.access_token);
-        // Redirect the user to the home page
         window.location.href = "/static/index.html";
     }
     // Failure
