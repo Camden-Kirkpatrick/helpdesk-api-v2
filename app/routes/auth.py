@@ -20,19 +20,17 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from sqlmodel import select
 import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = "HS256"
 
 router = APIRouter(
     prefix="/auth",
     tags=["auth"]
 )
-
-SECRET_KEY = os.getenv("SECRET_KEY")
-if not SECRET_KEY:
-    raise RuntimeError("SECRET_KEY env var is not set")
-
-ALGORITHM = "HS256"
 
 # Use this to hash the user's password
 bcrypt_context = CryptContext(schemes=["bcrypt"])
