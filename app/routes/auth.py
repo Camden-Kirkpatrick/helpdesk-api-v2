@@ -49,7 +49,7 @@ oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token", auto_error=False)
 def create_user(
     user: UserCreate,
     session: SessionDep
-) -> User:
+) -> UserPublic:
     """Register a new user account.
 
     Creates a user with a hashed password and stores it in the database.

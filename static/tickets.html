@@ -35,9 +35,21 @@
             <select id="q-status">
                 <option value="">status (any)</option>
                 <option value="open">open</option>
-                <option value="in_progress">in_progress</option>
+                <option value="in_progress">in progress</option>
                 <option value="closed">closed</option>
-            </select>   
+            </select>
+
+            <br>
+
+            <label for="q-limit">How many tickets do you want to see?</label>
+            <input id="q-limit" name="q-limit" type="number">
+
+            <br>
+
+            <label for="q-offset">How many tickets do you want to offset?</label>
+            <input id="q-offset" name="q-offset" type="number">
+
+            <br>
 
             <button type="submit">Search</button>
             <button type="button" id="clear-btn">Clear</button>

@@ -1,6 +1,7 @@
 // This is the key for the token
 const TOKEN_KEY = "access_token";
 
+// Functions dealing with the access_token
 function set_token(token)
 {
     sessionStorage.setItem(TOKEN_KEY, token);
@@ -38,12 +39,17 @@ async function safeJson(res)
 }
 
 // Return the error message from the response
-function extractErrorMessage(data)
+function extract_error_message(data)
 {
-    if (!data || data.detail == null)
-        return "";
+     // No FastAPI error info
+    if (!data || data.detail == null) return "";
 
-    return data.detail;
+    // Pydantic validation errors (detail is an array)
+    if (Array.isArray(data.detail))
+        return data.detail.map(e => e.msg).join(", ");
+
+    // Custom FastAPI errors (detail is a string)
+    return String(data.detail);
 }
 
 // Send a request to the API
@@ -51,10 +57,9 @@ async function requestOrThrow(url, options = {})
 {
     const headers = new Headers(options.headers || {});
     const token = get_token();
-    const isAuthRoute = url.startsWith("/auth");
 
     // Check to see if we need to set authorization using the token
-    if (token && !headers.has("Authorization") && !isAuthRoute)
+    if (token && !url.startsWith("/auth"))
     {
         headers.set("Authorization", `Bearer ${token}`);
     }
@@ -66,10 +71,10 @@ async function requestOrThrow(url, options = {})
     // JavaScript object returned from request
     const data = await safeJson(res);
 
-    // Ensure that the response is good
+    // Ensure that the response is ok
     if (!res.ok)
     {
-        const msg = extractErrorMessage(data);
+        const msg = extract_error_message(data);
         throw new Error(msg || `Request failed (${res.status})`);
     }
 
@@ -115,6 +120,19 @@ function validate_priority(raw_priority)
 }
 
 
+function valid_status(status)
+{
+    const allowed_statuses = ["in_progress", "open", "closed"]
+
+    if (!allowed_statuses.includes(status))
+    {
+        alert("Status must be: open, in progress, or closed.");
+        return null
+    }
+
+    return status;
+}
+
 
 // Toggle to view or hide the password entered by the user
 const password_button = document.getElementById("view_pass");
@@ -141,40 +159,35 @@ async function update_auth_ui()
     const login_el = document.querySelector("a.login-btn");
     const register_el = document.querySelector("a.register-btn");
 
+    // Ensure all elements exist
+    if (!user_el || !logout_el || !login_el || !register_el)
+        return;
+
+    // Succeeds if the user is looged in
     try
     {
         const me = await requestOrThrow("/user", {method: "GET"});
 
-        if (user_el)
-        {
-            user_el.style.display = "inline";
-            user_el.textContent =  `Logged in as: ${me.username}`;
-        }
+        user_el.style.display = "inline";
+        user_el.textContent =  `Logged in as: ${me.username}`;
 
-        if (logout_el)
-            logout_el.style.display = "inline";
+        logout_el.style.display = "inline";
 
-        if (login_el)
-            login_el.style.display = "none";
-
-        if (register_el)
-            register_el.style.display = "none";
+        login_el.style.display = "none";
+        register_el.style.display = "none";
     }
-
+    // The user is not logged in
     catch
     {
-        if (user_el) user_el.style.display = "none";
-        if (logout_el) logout_el.style.display = "none";
+        user_el.style.display = "none";
+        logout_el.style.display = "none";
 
-        if (login_el) login_el.style.display = "inline";
-        if (register_el) register_el.style.display = "inline";
+        login_el.style.display = "inline";
+        register_el.style.display = "inline";
     }
 
-    if (logout_el)
-    {
-        logout_el.onclick = (e) => {
-            e.preventDefault();
-            logout();
-        };
-    }
+    logout_el.onclick = (e) => {
+        e.preventDefault();
+        logout();
+    };
 }
