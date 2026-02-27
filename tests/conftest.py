@@ -67,3 +67,16 @@ def ticket(auth_client):
     )
     assert r.status_code == status.HTTP_201_CREATED
     return r.json()
+
+@pytest.fixture
+def two_users_headers(client) -> dict:
+    register(client, "bob", "abc123")
+    register(client, "sam", "def456")
+
+    token1 = login_token(client, "bob", "abc123").json()["access_token"]
+    token2 = login_token(client, "sam", "def456").json()["access_token"]
+
+    header1 = {"Authorization": f"Bearer {token1}"}
+    header2 = {"Authorization": f"Bearer {token2}"}
+
+    return {"bob": header1, "sam": header2}
