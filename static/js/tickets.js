@@ -1,8 +1,10 @@
+// Display the tickets from the API request
 function render_tickets(tickets)
 {
     const list = document.getElementById("tickets");
     list.innerHTML = "";
 
+    // The user might not have any tickets
     if (!tickets || tickets.length === 0)
     {
         const li = document.createElement("li");
@@ -11,6 +13,7 @@ function render_tickets(tickets)
         return;
     }
 
+    // Create a list of the user's tickets
     for (const t of tickets)
     {
         const li = document.createElement("li");
@@ -26,25 +29,27 @@ function render_tickets(tickets)
 }
 
 
-
+// Make an API request to view all the users tickets
 async function load_all_tickets()
 {
-    const status = document.getElementById("status");
+    const statusEl = document.getElementById("status");
 
     try
     {
+        // Make API request
         const tickets = await requestOrThrow("/api/tickets/", {method: "GET"});
-        status.textContent = "";
+        statusEl.textContent = "";
         render_tickets(tickets);
     }
+    // Print the error if the request failed
     catch (err)
     {
-        status.textContent = err?.message || "Failed to load tickets";
+        statusEl.textContent = err?.message || "Failed to load tickets";
     }
 }
 
 
-
+// Create the url with the search parameters from the form inputs
 function build_search_url()
 {
     // Get the data from all the input fields
@@ -106,25 +111,28 @@ function build_search_url()
     }
 
     const qs = params.toString();
+    // Construct the url using the search parameters
     return "/api/tickets/search" + (qs ? `?${qs}` : "");
 }
 
 
-
+// Search for the ticket(s) using the form data as query parameters
 async function search_tickets()
 {
     const statusEl = document.getElementById("status");
-    statusEl.textContent = "Searching...";
 
     try
     {
         const url = build_search_url();
         if (!url) return;
+        // Make API request
         const tickets = await requestOrThrow(url, {method: "GET"});
 
+        // Success
         statusEl.textContent = "";
         render_tickets(tickets);
     }
+    // Print the error if the request failed
     catch (err)
     {
         statusEl.textContent = err?.message || "Search failed"
@@ -132,12 +140,10 @@ async function search_tickets()
 }
 
 
-
+// Search for a ticket using its id
 async function search_by_id(ticket_id)
 {
     const statusEl = document.getElementById("status");
-    statusEl.textContent = "Loading ticket...";
-
     const list = document.getElementById("tickets");
     list.textContent = "";
 
@@ -149,7 +155,7 @@ async function search_by_id(ticket_id)
         statusEl.textContent = "";
         render_tickets([ticket]);
     }
-    // Failure
+    // Print the error if the request failed
     catch (err)
     {
         statusEl.textContent = err?.message || "Search failed";
@@ -158,14 +164,17 @@ async function search_by_id(ticket_id)
 
 
 
+// Run this code once the entire page has finished loading
 window.addEventListener("load", () => {
     load_all_tickets();
 
+    // Search using query parameters
     document.getElementById("search-form").addEventListener("submit", (e) => {
         e.preventDefault();
         search_tickets();
     });
 
+    // Search using the ticket's id
     document.getElementById("find-by-id").addEventListener("click", (e) => {
         e.preventDefault();
         const ticket_id = valid_ticket_id();
@@ -174,6 +183,7 @@ window.addEventListener("load", () => {
         search_by_id(ticket_id);
     });
 
+    // Clear all search inputs, reset the form fields, and reload all tickets
     document.getElementById("clear-btn").addEventListener("click", () => {
         document.getElementById("q-title").value =  "";
         document.getElementById("q-desc").value =  "";

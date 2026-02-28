@@ -220,7 +220,7 @@ def update_ticket(
         )
 
     # Get a dictionary of all the fields with the new values.
-    update_data = ticket.model_dump(exclude_unset=True)
+    update_data = ticket.model_dump(exclude_unset=True, exclude_none=True)
 
     if not update_data:
         raise HTTPException(

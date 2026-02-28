@@ -3,6 +3,7 @@ const form = document.getElementById("form");
 form.addEventListener("submit", async event => {
     event.preventDefault();
 
+    // Check to see if the ticket_id valid
     const ticket_id = valid_ticket_id();
     if (!ticket_id)
         return;

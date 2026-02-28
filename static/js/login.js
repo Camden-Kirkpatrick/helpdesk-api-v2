@@ -40,7 +40,7 @@ form.addEventListener("submit", async (event) =>
         set_token(data.access_token);
         window.location.href = "/static/index.html";
     }
-    // Failure
+    // Print the error if the request failed
     catch (err)
     {
         alert(err?.message || "Login failed");

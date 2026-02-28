@@ -25,6 +25,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY is not set")
 ALGORITHM = "HS256"
 
 router = APIRouter(
@@ -131,7 +133,7 @@ def authenticate_user(
     username: str,
     password: str,
     session: SessionDep
-) -> User:
+) -> User | None:
     """Authenticates a user.
 
     The user to be logged in is grabbed from the db.
@@ -143,7 +145,7 @@ def authenticate_user(
         session (SessionDep): Database session injected by FastAPI.
 
     Returns:
-        User | bool: The authenticated user object, or False if authentication fails.
+        User | None: The authenticated user object, or None if authentication fails.
 
     Raises:
         None
@@ -153,10 +155,10 @@ def authenticate_user(
     user = session.exec(statement).first()
 
     if not user:
-        return False
+        return None
 
     if not bcrypt_context.verify(password, user.hashed_password):
-        return False
+        return None
 
     return user
 

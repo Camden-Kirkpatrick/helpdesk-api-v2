@@ -10,7 +10,7 @@ form.addEventListener("submit", async (event) =>
     const raw_priority = form.priority.value.trim();
     const raw_status = form.ticket_status.value.trim();
 
-    // ticket_id must be entered in order to update
+    // Check to see if the ticket_id valid
     const ticket_id = valid_ticket_id();
     if (!ticket_id)
         return;
@@ -60,7 +60,7 @@ form.addEventListener("submit", async (event) =>
         alert(`Ticket id=${updated.id} updated`);
         window.location.href = "/static/tickets.html";
     }
-    // Failure
+    // Print the error if the request failed
     catch (err)
     {
         console.error(err);

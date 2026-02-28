@@ -12,14 +12,9 @@ function get_token()
     return sessionStorage.getItem(TOKEN_KEY);
 }
 
-function clear_token()
-{
-    sessionStorage.removeItem(TOKEN_KEY);
-}
-
 function logout()
 {
-    sessionStorage.removeItem("access_token");
+    sessionStorage.removeItem(TOKEN_KEY);
     window.location.reload();
 }
 
@@ -119,7 +114,7 @@ function validate_priority(raw_priority)
     return priority;
 }
 
-
+// Ensure that the status the user selected is valid
 function valid_status(status)
 {
     const allowed_statuses = ["in_progress", "open", "closed"]

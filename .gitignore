@@ -4,3 +4,4 @@ database.db
 test_database.db
 .pytest_cache
 .env
+.vscode

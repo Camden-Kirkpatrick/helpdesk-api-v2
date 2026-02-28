@@ -39,8 +39,7 @@ form.addEventListener("submit", async (event) =>
         });
         
         alert(`Ticket id=${created.id} created`);
-        // View the ticket the user just created
-        // window.location.href = "/api/tickets/" + created.id;
+        // Redirect the user so they can see their tickets
         window.location.href = "/static/tickets.html";
     }
     // Print the error if the request failed
