@@ -5,7 +5,7 @@ from app.main import app
 from app.db import get_session
 from starlette import status
 
-def register(client, username: str, password: str):
+def register(client, username: str | None = None, password: str | None = None):
     return client.post("/auth/", json={"username": username, "password": password})
 
 def login_token(client, username: str, password: str):
@@ -37,18 +37,25 @@ def client():
     # Remove all test dependency overrides so they don't affect other tests
     app.dependency_overrides.clear()
 
+
 @pytest.fixture
 def token(client) -> str:
     username = "bob"
     password = "abc123"
-    register(client, username, password)
 
-    r = login_token(client, username, password)
-    return r.json()["access_token"]
+    reg_r = register(client, username, password)
+    assert reg_r.status_code == status.HTTP_201_CREATED
+
+    log_r = login_token(client, username, password)
+    assert log_r.status_code == status.HTTP_200_OK
+
+    return log_r.json()["access_token"]
+
 
 @pytest.fixture
 def auth_headers(token) -> dict:
     return {"Authorization": f"Bearer {token}"}
+
 
 @pytest.fixture
 def auth_client(client, auth_headers):
@@ -68,13 +75,21 @@ def ticket(auth_client):
     assert r.status_code == status.HTTP_201_CREATED
     return r.json()
 
+
 @pytest.fixture
 def two_users_headers(client) -> dict:
-    register(client, "bob", "abc123")
-    register(client, "sam", "def456")
+    reg1 = register(client, "bob", "abc123")
+    reg2 = register(client, "sam", "def456")
+    assert reg1.status_code == status.HTTP_201_CREATED
+    assert reg2.status_code == status.HTTP_201_CREATED
 
-    token1 = login_token(client, "bob", "abc123").json()["access_token"]
-    token2 = login_token(client, "sam", "def456").json()["access_token"]
+    log1 = login_token(client, "bob", "abc123")
+    log2 = login_token(client, "sam", "def456")
+    assert log1.status_code == status.HTTP_200_OK
+    assert log2.status_code == status.HTTP_200_OK
+
+    token1 = log1.json()["access_token"]
+    token2 = log2.json()["access_token"]
 
     header1 = {"Authorization": f"Bearer {token1}"}
     header2 = {"Authorization": f"Bearer {token2}"}
