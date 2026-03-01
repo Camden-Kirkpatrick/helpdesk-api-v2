@@ -271,7 +271,7 @@ The frontend uses a shared request helper to:
 
 ## Running Tests
 
-    pytest
+    python -m pytest
 
 ---
 
